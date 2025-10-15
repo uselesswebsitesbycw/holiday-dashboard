@@ -1,35 +1,211 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Holiday Countdown Dashboard</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Holiday Dashboard</title>
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #f0f4ff, #e3ecf8);
+    margin: 0;
+    padding: 0;
+    color: #333;
+  }
+
+  header {
+    text-align: center;
+    padding: 1.5em 0;
+    background: #3c4df7;
+    color: white;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+
+  h1 {
+    font-size: 2em;
+    margin: 0;
+  }
+
+  .dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5em;
+    padding: 2em;
+    max-width: 1200px;
+    margin: auto;
+  }
+
+  .card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5em;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+  }
+
+  .holiday-name {
+    font-weight: 700;
+    font-size: 1.1em;
+    margin-bottom: 0.5em;
+  }
+
+  .countdown {
+    font-size: 1em;
+    color: #555;
+  }
+
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7);
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+  }
+
+  .modal-content {
+    background: white;
+    padding: 2em;
+    border-radius: 20px;
+    text-align: center;
+    max-width: 600px;
+    width: 90%;
+    position: relative;
+  }
+
+  .close {
+    position: absolute;
+    top: 1em;
+    right: 1.5em;
+    font-size: 1.5em;
+    color: #555;
+    cursor: pointer;
+  }
+
+  .theme {
+    font-weight: bold;
+    padding: 1em;
+    border-radius: 15px;
+    margin-top: 1em;
+  }
+
+  .theme.christmas { background: #d32f2f; color: white; }
+  .theme.halloween { background: #ff9800; color: black; }
+  .theme.newyear { background: #212121; color: gold; }
+  .theme.valentine { background: #e91e63; color: white; }
+  .theme.thanksgiving { background: #795548; color: #fff3e0; }
+  .theme.july4 { background: #0d47a1; color: white; }
+  .theme.easter { background: #8e24aa; color: #f3e5f5; }
+  .theme.memorial { background: #1e88e5; color: white; }
+  .theme.labor { background: #4caf50; color: white; }
+  .theme.mothers { background: #ec407a; color: white; }
+  .theme.fathers { background: #8d6e63; color: #fffde7; }
+
+</style>
 </head>
 <body>
-  <header>
-    <h1>🎉 Holiday Countdown Dashboard 🎉</h1>
-    <input type="text" id="search" placeholder="Search holidays..." />
-  </header>
+<header>
+  <h1>🌟 Holiday Dashboard 🌟</h1>
+  <p>Click any holiday to see details and live countdowns!</p>
+</header>
 
-  <main>
-    <div id="holiday-grid"></div>
-  </main>
+<div class="dashboard" id="dashboard"></div>
 
-  <div id="popup" class="hidden">
-    <div id="popup-content">
-      <button id="close-popup">×</button>
-      <h2 id="holiday-title"></h2>
-      <p id="holiday-date"></p>
-      <div id="holiday-countdown"></div>
-      <canvas id="background-effect"></canvas>
-    </div>
+<div class="modal" id="holidayModal">
+  <div class="modal-content">
+    <span class="close" id="closeModal">&times;</span>
+    <h2 id="holidayTitle"></h2>
+    <div id="holidayDate"></div>
+    <div class="theme" id="holidayTheme"></div>
+    <p id="holidayDesc"></p>
   </div>
+</div>
 
-  <footer>
-    <p>Made with ❤️ on GitHub Pages</p>
-  </footer>
+<script>
+const holidays = [
+  {name: "New Year's Day", month: 1, day: 1, theme: "newyear", desc: "Celebrate the beginning of a brand new year!"},
+  {name: "Valentine's Day", month: 2, day: 14, theme: "valentine", desc: "A day to celebrate love and friendship."},
+  {name: "Easter", month: 4, day: 20, theme: "easter", desc: "Celebrate rebirth, hope, and new beginnings."},
+  {name: "Mother's Day", month: 5, day: 11, theme: "mothers", desc: "Honor mothers and motherhood with gratitude."},
+  {name: "Memorial Day", month: 5, day: 26, theme: "memorial", desc: "Remember and honor fallen military heroes."},
+  {name: "Father's Day", month: 6, day: 15, theme: "fathers", desc: "Celebrate fathers and fatherhood."},
+  {name: "Independence Day", month: 7, day: 4, theme: "july4", desc: "Celebrate American independence with fireworks!"},
+  {name: "Labor Day", month: 9, day: 1, theme: "labor", desc: "Celebrate the achievements of workers everywhere."},
+  {name: "Halloween", month: 10, day: 31, theme: "halloween", desc: "Spooky season! Trick-or-treat and fun costumes."},
+  {name: "Thanksgiving", month: 11, day: 28, theme: "thanksgiving", desc: "Give thanks and enjoy a feast with family."},
+  {name: "Christmas", month: 12, day: 25, theme: "christmas", desc: "Celebrate joy, giving, and togetherness."},
+];
 
-  <script src="script.js"></script>
+function getNextHolidayDate(holiday) {
+  const now = new Date();
+  let year = now.getFullYear();
+  let date = new Date(year, holiday.month - 1, holiday.day);
+  if (date < now) date = new Date(year + 1, holiday.month - 1, holiday.day);
+  return date;
+}
+
+function formatCountdown(ms) {
+  const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((ms / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((ms / (1000 * 60)) % 60);
+  return `${days}d ${hours}h ${minutes}m`;
+}
+
+function renderDashboard() {
+  const dashboard = document.getElementById('dashboard');
+  dashboard.innerHTML = "";
+  const now = new Date();
+
+  holidays.sort((a, b) => getNextHolidayDate(a) - getNextHolidayDate(b));
+
+  holidays.forEach(holiday => {
+    const nextDate = getNextHolidayDate(holiday);
+    const diff = nextDate - now;
+    const countdown = formatCountdown(diff);
+
+    const card = document.createElement('div');
+    card.className = "card";
+    card.innerHTML = `
+      <div class="holiday-name">${holiday.name}</div>
+      <div class="countdown">${countdown}</div>
+    `;
+    card.onclick = () => openModal(holiday);
+    dashboard.appendChild(card);
+  });
+}
+
+function openModal(holiday) {
+  const modal = document.getElementById('holidayModal');
+  modal.style.display = 'flex';
+  document.getElementById('holidayTitle').textContent = holiday.name;
+  document.getElementById('holidayDate').textContent = getNextHolidayDate(holiday).toDateString();
+  const theme = document.getElementById('holidayTheme');
+  theme.className = "theme " + holiday.theme;
+  theme.textContent = holiday.name + " Theme";
+  document.getElementById('holidayDesc').textContent = holiday.desc;
+}
+
+document.getElementById('closeModal').onclick = () => {
+  document.getElementById('holidayModal').style.display = 'none';
+};
+
+window.onclick = event => {
+  if (event.target == document.getElementById('holidayModal')) {
+    document.getElementById('holidayModal').style.display = 'none';
+  }
+};
+
+renderDashboard();
+setInterval(renderDashboard, 60000); // refresh countdowns every minute
+</script>
 </body>
 </html>
