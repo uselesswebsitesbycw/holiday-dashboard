@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Holiday Countdown Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>🎉 Holiday Countdown Dashboard 🎉</h1>
+    <input type="text" id="search" placeholder="Search holidays..." />
+  </header>
+
+  <main>
+    <div id="holiday-grid"></div>
+  </main>
+
+  <div id="popup" class="hidden">
+    <div id="popup-content">
+      <button id="close-popup">×</button>
+      <h2 id="holiday-title"></h2>
+      <p id="holiday-date"></p>
+      <div id="holiday-countdown"></div>
+      <canvas id="background-effect"></canvas>
+    </div>
+  </div>
+
+  <footer>
+    <p>Made with ❤️ on GitHub Pages</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
